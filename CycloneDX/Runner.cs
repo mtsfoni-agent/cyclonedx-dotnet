@@ -70,6 +70,48 @@ namespace CycloneDX
             options.githubUsername ??= Environment.GetEnvironmentVariable("GITHUB_USERNAME");
             options.githubT ??= Environment.GetEnvironmentVariable("GITHUB_TOKEN");
             options.githubBT ??= Environment.GetEnvironmentVariable("GITHUB_BEARER_TOKEN");
+
+            if (options.NugetPasswordFromStdin && options.GithubTokenFromStdin)
+            {
+                Console.Error.WriteLine("Only one --xxx-stdin option may be used at a time.");
+                return (int)ExitCode.InvalidOptions;
+            }
+
+            if (options.NugetPasswordFromStdin)
+            {
+                var line = await Console.In.ReadLineAsync().ConfigureAwait(false);
+                if (string.IsNullOrEmpty(line))
+                {
+                    Console.Error.WriteLine("NuGet password expected on standard input.");
+                    return (int)ExitCode.InvalidOptions;
+                }
+                options.baseUrlUSP = line;
+            }
+
+            if (options.GithubTokenFromStdin)
+            {
+                var line = await Console.In.ReadLineAsync().ConfigureAwait(false);
+                if (string.IsNullOrEmpty(line))
+                {
+                    Console.Error.WriteLine("GitHub token expected on standard input.");
+                    return (int)ExitCode.InvalidOptions;
+                }
+                options.githubT = line;
+            }
+
+            if (!string.IsNullOrEmpty(options.baseUrlUSP) &&
+                options.baseUrlUSP != Environment.GetEnvironmentVariable("NUGET_PASSWORD") &&
+                !options.NugetPasswordFromStdin)
+            {
+                Console.Error.WriteLine("Warning: --baseUrlUserPassword is deprecated. Use --nuget-password-stdin or NUGET_PASSWORD environment variable.");
+            }
+
+            if (!string.IsNullOrEmpty(options.githubT) &&
+                options.githubT != Environment.GetEnvironmentVariable("GITHUB_TOKEN") &&
+                !options.GithubTokenFromStdin)
+            {
+                Console.Error.WriteLine("Warning: --github-token is deprecated. Use --github-token-stdin or GITHUB_TOKEN environment variable.");
+            }
             options.outputDirectory ??= fileSystem.Directory.GetCurrentDirectory();
             string outputDirectory = options.outputDirectory;
             string SolutionOrProjectFile = options.SolutionOrProjectFile;

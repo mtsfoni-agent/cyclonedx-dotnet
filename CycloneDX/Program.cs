@@ -37,11 +37,13 @@ namespace CycloneDX
             var baseUrl = new Option<string>(new[] { "--url", "-u" }, "Alternative NuGet repository URL to https://<yoururl>/nuget/<yourrepository>/v3/index.json");
             var baseUrlUS = new Option<string>(new[] { "--baseUrlUsername", "-us" }, "Alternative NuGet repository username");
             var baseUrlUSP = new Option<string>(new[] { "--baseUrlUserPassword", "-usp" }, "Alternative NuGet repository username password/apikey");
+            var nugetPasswordStdin = new Option<bool>("--nuget-password-stdin", "Read NuGet password from standard input.");
             var isPasswordClearText = new Option<bool>(new[] { "--isBaseUrlPasswordClearText", "-uspct" }, "Alternative NuGet repository password is cleartext");
             var scanProjectReferences = new Option<bool>(new[] { "--recursive", "-rs" }, "To be used with a single project file, it will recursively scan project references of the supplied project file");
             var noSerialNumber = new Option<bool>(new[] { "--no-serial-number", "-ns" }, "Optionally omit the serial number from the resulting BOM");
             var githubUsername = new Option<string>(new[] { "--github-username", "-gu" }, "Optionally provide a GitHub username for license resolution. If set you also need to provide a GitHub personal access token");
             var githubT = new Option<string>(new[] { "--github-token", "-gt" }, "Optionally provide a GitHub personal access token for license resolution. If set you also need to provide a GitHub username");
+            var githubTokenStdin = new Option<bool>("--github-token-stdin", "Read GitHub token from standard input.");
             var githubBT = new Option<string>(new[] { "--github-bearer-token", "-gbt" }, "Optionally provide a GitHub bearer token for license resolution. This is useful in GitHub actions");
             var enableGithubLicenses = new Option<bool>(new[] { "--enable-github-licenses", "-egl" }, "Enables GitHub license resolution");
             var disablePackageRestore = new Option<bool>(new[] { "--disable-package-restore", "-dpr" }, "Optionally disable package restore");
@@ -83,11 +85,13 @@ namespace CycloneDX
                 baseUrl,
                 baseUrlUS,
                 baseUrlUSP,
+                nugetPasswordStdin,
                 isPasswordClearText,
                 scanProjectReferences,
                 noSerialNumber,
                 githubUsername,
                 githubT,
+                githubTokenStdin,
                 githubBT,
                 enableGithubLicenses,
                 disablePackageRestore,
@@ -124,11 +128,13 @@ namespace CycloneDX
                     baseUrl = context.ParseResult.GetValueForOption(baseUrl),
                     baseUrlUserName = context.ParseResult.GetValueForOption(baseUrlUS),
                     baseUrlUSP = context.ParseResult.GetValueForOption(baseUrlUSP),
+                    NugetPasswordFromStdin = context.ParseResult.GetValueForOption(nugetPasswordStdin),
                     isPasswordClearText = context.ParseResult.GetValueForOption(isPasswordClearText),
                     scanProjectReferences = context.ParseResult.GetValueForOption(scanProjectReferences) | context.ParseResult.GetValueForOption(scanProjectDeprecated),
                     noSerialNumber = context.ParseResult.GetValueForOption(noSerialNumber),
                     githubUsername = context.ParseResult.GetValueForOption(githubUsername),
                     githubT = context.ParseResult.GetValueForOption(githubT),
+                    GithubTokenFromStdin = context.ParseResult.GetValueForOption(githubTokenStdin),
                     githubBT = context.ParseResult.GetValueForOption(githubBT),
                     enableGithubLicenses = context.ParseResult.GetValueForOption(enableGithubLicenses),
                     disablePackageRestore = context.ParseResult.GetValueForOption(disablePackageRestore),

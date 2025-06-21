@@ -64,6 +64,12 @@ namespace CycloneDX
 
         public async Task<int> HandleCommandAsync(RunOptions options)
         {
+            options.baseUrl ??= Environment.GetEnvironmentVariable("NUGET_SOURCE_URL");
+            options.baseUrlUserName ??= Environment.GetEnvironmentVariable("NUGET_USERNAME");
+            options.baseUrlUSP ??= Environment.GetEnvironmentVariable("NUGET_PASSWORD");
+            options.githubUsername ??= Environment.GetEnvironmentVariable("GITHUB_USERNAME");
+            options.githubT ??= Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+            options.githubBT ??= Environment.GetEnvironmentVariable("GITHUB_BEARER_TOKEN");
             options.outputDirectory ??= fileSystem.Directory.GetCurrentDirectory();
             string outputDirectory = options.outputDirectory;
             string SolutionOrProjectFile = options.SolutionOrProjectFile;

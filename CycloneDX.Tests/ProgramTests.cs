@@ -19,9 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using System.IO.Abstractions;
 using System.Threading.Tasks;
 using CycloneDX.Interfaces;
 using CycloneDX.Models;
+using CycloneDX.Services;
 using Moq;
 using Xunit;
 using XFS = System.IO.Abstractions.TestingHelpers.MockUnixSupport;
@@ -128,7 +130,60 @@ namespace CycloneDX.Tests
 
             var exitCode = await runner.HandleCommandAsync(runOptions);
 
-            Assert.NotEqual((int)ExitCode.OK, exitCode);            
+            Assert.NotEqual((int)ExitCode.OK, exitCode);
+        }
+
+        [Fact]
+        public async Task CredentialsFromEnvironmentVariablesAreUsed()
+        {
+            Environment.SetEnvironmentVariable("GITHUB_USERNAME", "env-user");
+            Environment.SetEnvironmentVariable("GITHUB_TOKEN", "env-token");
+            Environment.SetEnvironmentVariable("NUGET_USERNAME", "nu-user");
+            Environment.SetEnvironmentVariable("NUGET_PASSWORD", "nu-pass");
+
+            var mockFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { XFS.Path(@"c:\SolutionPath\SolutionFile.sln"), "" }
+                });
+            var mockSolutionFileService = new Mock<ISolutionFileService>();
+            mockSolutionFileService
+                .Setup(s => s.GetSolutionDotnetDependencys(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new HashSet<DotnetDependency>());
+            var mockNugetServiceFactory = new Mock<INugetServiceFactory>();
+            var mockNugetService = new Mock<INugetService>();
+            mockNugetServiceFactory.Setup(f => f.Create(It.IsAny<RunOptions>(), It.IsAny<IFileSystem>(), It.IsAny<IGithubService>(), It.IsAny<List<string>>()))
+                .Returns(mockNugetService.Object);
+
+            try
+            {
+                Runner runner = new Runner(fileSystem: mockFileSystem, null, null, null, null, null, solutionFileService: mockSolutionFileService.Object, nugetServiceFactory: mockNugetServiceFactory.Object);
+
+                RunOptions runOptions = new RunOptions
+                {
+                    SolutionOrProjectFile = XFS.Path(@"c:\SolutionPath\SolutionFile.sln"),
+                    outputDirectory = XFS.Path(@"c:\NewDirectory"),
+                    enableGithubLicenses = true
+                };
+
+                var exitCode = await runner.HandleCommandAsync(runOptions);
+
+                Assert.Equal((int)ExitCode.OK, exitCode);
+                mockNugetServiceFactory.Verify(f => f.Create(It.Is<RunOptions>(o =>
+                    o.baseUrlUserName == "nu-user" &&
+                    o.baseUrlUSP == "nu-pass" &&
+                    o.githubUsername == "env-user" &&
+                    o.githubT == "env-token"),
+                    It.IsAny<IFileSystem>(),
+                    It.IsAny<IGithubService>(),
+                    It.IsAny<List<string>>()), Times.Once);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("GITHUB_USERNAME", null);
+                Environment.SetEnvironmentVariable("GITHUB_TOKEN", null);
+                Environment.SetEnvironmentVariable("NUGET_USERNAME", null);
+                Environment.SetEnvironmentVariable("NUGET_PASSWORD", null);
+            }
         }
     }
 }

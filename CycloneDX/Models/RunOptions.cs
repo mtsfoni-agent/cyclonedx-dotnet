@@ -38,7 +38,9 @@ namespace CycloneDX.Models
         public bool noSerialNumber { get; set; }
         public string githubUsername { get; set; }
         public string githubT { get; set; }
-        public string githubBT { get; set; }        
+        public string githubBT { get; set; }
+        public bool NugetPasswordFromStdin { get; set; }
+        public bool GithubTokenFromStdin { get; set; }
         public bool enableGithubLicenses { get; set; }
         public bool disablePackageRestore { get; set; }
         public bool disableHashComputation { get; set; }

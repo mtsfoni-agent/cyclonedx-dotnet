@@ -75,11 +75,13 @@ Options:
   -u, --url <url>                                                              Alternative NuGet repository URL to https://<yoururl>/nuget/<yourrepository>/v3/index.json
   -us, --baseUrlUsername <baseUrlUsername>                                     Alternative NuGet repository username
   -usp, --baseUrlUserPassword <baseUrlUserPassword>                            Alternative NuGet repository username password/apikey
+  --nuget-password-stdin                                                      Read NuGet password from standard input.
   -uspct, --isBaseUrlPasswordClearText                                         Alternative NuGet repository password is cleartext
   -rs, --recursive                                                             To be used with a single project file, it will recursively scan project references of the supplied project file
   -ns, --no-serial-number                                                      Optionally omit the serial number from the resulting BOM
   -gu, --github-username <github-username>                                     Optionally provide a GitHub username for license resolution. If set you also need to provide a GitHub personal access token
   -gt, --github-token <github-token>                                           Optionally provide a GitHub personal access token for license resolution. If set you also need to provide a GitHub username
+  --github-token-stdin                                                         Read GitHub token from standard input.
   -gbt, --github-bearer-token <github-bearer-token>                            Optionally provide a GitHub bearer token for license resolution. This is useful in GitHub actions
   -egl, --enable-github-licenses                                               Enables GitHub license resolution
   -dpr, --disable-package-restore                                              Optionally disable package restore
@@ -175,6 +177,18 @@ permissions are required.
 
 Due to current limitations in the GitHub API licenses will only be resolved for
 master branch license references.
+
+#### Credentials via Environment Variables
+
+For automated scenarios credentials can be provided through environment variables:
+
+- `NUGET_USERNAME` and `NUGET_PASSWORD` set NuGet feed credentials.
+- `GITHUB_USERNAME` and `GITHUB_TOKEN` set GitHub credentials for license resolution.
+- `GITHUB_BEARER_TOKEN` can be used instead of username and token.
+
+Alternatively you can supply secrets via standard input using `--nuget-password-stdin` or `--github-token-stdin`.
+
+Command line options take precedence over environment variables.
 
 ## License
 
